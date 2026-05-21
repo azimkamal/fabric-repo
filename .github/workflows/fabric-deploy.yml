@@ -56,7 +56,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip install --upgrade pip
-          pip install fabric-cicd azure-identity requests
+          pip install -r requirements.txt
  
       - name: Set target environment
         id: set-env
