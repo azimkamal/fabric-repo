@@ -64,13 +64,15 @@ jobs:
           fi
 
       - name: Deploy Fabric items
+        env:
+          ITEMS_IN_SCOPE: ${{ github.event.inputs.items_in_scope || '["Notebook","DataPipeline","Lakehouse","SemanticModel","Report","VariableLibrary"]' }}
         run: |
           python .deploy/deploy-to-fabric.py \
             --aztenantid    "$AZURE_TENANT_ID" \
             --azclientid    "$AZURE_CLIENT_ID" \
             --azspsecret    "$AZURE_CLIENT_SECRET" \
             --target_env    "$TARGET_ENV" \
-            --items_in_scope '${{ github.event.inputs.items_in_scope || "[\"Notebook\",\"DataPipeline\",\"Lakehouse\",\"SemanticModel\",\"Report\",\"VariableLibrary\"]" }}'
+            --items_in_scope "$ITEMS_IN_SCOPE"
 
       - name: Deployment summary
         if: always()
