@@ -1,39 +1,35 @@
 # .github/workflows/fabric-deploy.yml
 # Triggers only on test and main branches.
 # Does NOT trigger on dev.
- 
-name: Fabric CI/CD Deploy
- 
-on:
 
+name: Fabric CI/CD Deploy
+
+on:
   push:
     branches:
       - test
       - main
     paths:
       - 'fabric/**'
- 
+
   workflow_dispatch:
     inputs:
       items_in_scope:
         description: 'Fabric item types to deploy'
         required: false
         default: '["Notebook","DataPipeline","Lakehouse","SemanticModel","Report","VariableLibrary"]'
- 
+
 env:
   PYTHON_VERSION: '3.12'
- 
+
 jobs:
   deploy:
     name: Deploy to Fabric
     runs-on: ubuntu-latest
- 
-    # Map branch to GitHub Environment for approval gates
-    # test branch  → 'test' environment
-    # main branch  → 'production' environment
+
     environment: >-
       ${{ github.ref_name == 'main' && 'production' || 'test' }}
- 
+
     env:
       AZURE_TENANT_ID:     ${{ secrets.AZURE_TENANT_ID }}
       AZURE_CLIENT_ID:     ${{ secrets.AZURE_CLIENT_ID }}
@@ -42,22 +38,22 @@ jobs:
       TEST_WORKSPACE_NAME: ${{ vars.TEST_WORKSPACE_NAME }}
       PROD_WORKSPACE_NAME: ${{ vars.PROD_WORKSPACE_NAME }}
       GIT_DIRECTORY:       ${{ vars.GIT_DIRECTORY }}
- 
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
- 
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: 'pip'
- 
+
       - name: Install dependencies
         run: |
           pip install --upgrade pip
           pip install -r requirements.txt
- 
+
       - name: Set target environment
         id: set-env
         run: |
@@ -66,7 +62,7 @@ jobs:
           else
             echo "TARGET_ENV=test" >> $GITHUB_ENV
           fi
- 
+
       - name: Deploy Fabric items
         run: |
           python .deploy/deploy-to-fabric.py \
@@ -74,8 +70,8 @@ jobs:
             --azclientid    "$AZURE_CLIENT_ID" \
             --azspsecret    "$AZURE_CLIENT_SECRET" \
             --target_env    "$TARGET_ENV" \
-            --items_in_scope '${{ github.event.inputs.items_in_scope || '["Notebook","DataPipeline","Lakehouse","SemanticModel","Report","VariableLibrary"]' }}'
- 
+            --items_in_scope '${{ github.event.inputs.items_in_scope || "[\"Notebook\",\"DataPipeline\",\"Lakehouse\",\"SemanticModel\",\"Report\",\"VariableLibrary\"]" }}'
+
       - name: Deployment summary
         if: always()
         run: |
